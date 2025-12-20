@@ -1,11 +1,24 @@
-import { app, shell, BrowserWindow, ipcMain, globalShortcut } from 'electron'
+import { app, shell, BrowserWindow, ipcMain, globalShortcut, dialog } from 'electron'
 import { release } from 'node:os'
-import { join } from 'node:path'
-import { updateElectronApp, UpdateSourceType } from 'update-electron-app'
+import { join, dirname } from 'node:path'
+import { fileURLToPath } from 'node:url'
+// import { updateElectronApp, UpdateSourceType } from 'update-electron-app'
 import { initDatabase, searchLinks, getAllLinks, createLink, deleteLink, incrementVisitCount, closeDatabase } from '../src/services/database'
 import { openUrl } from '../src/services/urlLauncher'
 import { getAllSettings } from '../src/services/settings'
 import { Link } from '../src/types/link'
+import * as fs from 'fs'
+
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = dirname(__filename)
+
+// Logger helper
+function logToFile(message: string) {
+  const logPath = join(app.getPath('userData'), 'main.log')
+  const timestamp = new Date().toISOString()
+  fs.appendFileSync(logPath, `${timestamp} - ${message}\n`)
+}
+
 
 // The built directory structure
 //
@@ -27,30 +40,38 @@ if (release().startsWith('6.1')) app.disableHardwareAcceleration()
 // Set application name for Windows 10+ notifications
 if (process.platform === 'win32') app.setAppUserModelId(app.getName())
 
+logToFile('Checking single instance lock...')
 if (!app.requestSingleInstanceLock()) {
-  app.quit()
-  process.exit(0)
-}
-
-let win: BrowserWindow | null = null
+    logToFile('Failed to acquire single instance lock, quitting.')
+    app.quit()
+    process.exit(0)
+  }
+  
+  let win: BrowserWindow | null = null
 // Here, you can also use other preload
 const preload = join(__dirname, '../preload/index.js')
 const url = process.env.VITE_DEV_SERVER_URL
 const indexHtml = join(process.env.DIST, 'index.html')
 
+process.on('uncaughtException', (error) => {
+  dialog.showErrorBox('Uncaught Exception', error.stack || error.message)
+})
+
 async function createWindow() {
+  logToFile('Creating window...')
+  try {
   // 获取保存的窗口设置
   const settings = await getSettingsFromDatabase()
   
   win = new BrowserWindow({
-    title: 'Raycast Link Manager',
+    title: 'KJump',
     icon: join(process.env.PUBLIC || '', 'favicon.ico'),
     width: parseInt((settings.window_width || '600') as string, 10),
     height: parseInt((settings.window_height || '400') as string, 10),
     minWidth: 400,
     minHeight: 300,
-    frame: false,
-    transparent: true,
+    frame: true,
+    transparent: false,
     titleBarStyle: 'hiddenInset',
     webPreferences: {
       preload,
@@ -59,7 +80,13 @@ async function createWindow() {
       // Read more on https://www.electronjs.org/docs/latest/tutorial/context-isolation
       nodeIntegration: true,
       contextIsolation: false,
+      devTools: true,
     },
+  })
+
+  win.once('ready-to-show', () => {
+    logToFile('Window ready to show')
+    win?.show()
   })
 
   if (url) { // electron-vite dev mode
@@ -77,11 +104,15 @@ async function createWindow() {
   })
 
   // Apply electron-updater
-  updateElectronApp({
-    updateSource: {
-      type: UpdateSourceType.ElectronPublicUpdateService,
-    },
-  })
+  // updateElectronApp({
+  //   updateSource: {
+  //     type: UpdateSourceType.ElectronPublicUpdateService,
+  //   },
+  // })
+  } catch (error) {
+    logToFile(`Failed to create window: ${(error as Error).message}`)
+    dialog.showErrorBox('Failed to create window', (error as Error).stack || (error as Error).message)
+  }
 }
 
 /**
@@ -102,8 +133,13 @@ async function getSettingsFromDatabase() {
 }
 
 app.whenReady().then(() => {
-  // 初始化数据库
-  initDatabase()
+  try {
+    // 初始化数据库
+    initDatabase()
+  } catch (error) {
+    dialog.showErrorBox('Database Initialization Error', (error as Error).stack || (error as Error).message)
+    return
+  }
   
   // 创建窗口
   createWindow()
@@ -156,9 +192,11 @@ app.on('window-all-closed', () => {
 })
 
 app.on('second-instance', () => {
+  logToFile('Second instance detected')
   if (win) {
     // Focus on the main window if the user tried to open another
     if (win.isMinimized()) win.restore()
+    if (!win.isVisible()) win.show()
     win.focus()
   }
 })
