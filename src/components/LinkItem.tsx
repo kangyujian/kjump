@@ -1,4 +1,4 @@
-import { Search, Plus, Settings, ExternalLink, Trash2 } from 'lucide-react';
+import { ExternalLink, Trash2 } from 'lucide-react';
 import { Link } from '../types/link';
 
 interface LinkItemProps {

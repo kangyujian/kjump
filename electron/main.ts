@@ -172,7 +172,7 @@ app.on('will-quit', () => {
 })
 
 // IPC 通信处理
-ipcMain.handle('search-links', async (event, query: string) => {
+ipcMain.handle('search-links', async (_event, query: string) => {
   return searchLinks(query)
 })
 
@@ -180,18 +180,18 @@ ipcMain.handle('get-all-links', async () => {
   return getAllLinks()
 })
 
-ipcMain.handle('create-link', async (event, link: Omit<Link, 'id' | 'visit_count' | 'created_at' | 'updated_at'>) => {
+ipcMain.handle('create-link', async (_event, link: Omit<Link, 'id' | 'visit_count' | 'created_at' | 'updated_at'>) => {
   return createLink(link)
 })
 
-ipcMain.handle('delete-link', async (event, id: number) => {
+ipcMain.handle('delete-link', async (_event, id: number) => {
   return deleteLink(id)
 })
 
-ipcMain.handle('increment-visit-count', async (event, id: number) => {
+ipcMain.handle('increment-visit-count', async (_event, id: number) => {
   return incrementVisitCount(id)
 })
 
-ipcMain.handle('open-url', async (event, url: string) => {
+ipcMain.handle('open-url', async (_event, url: string) => {
   return openUrl(url)
 })

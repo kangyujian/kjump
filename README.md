@@ -44,11 +44,14 @@ npm run dev
 
 ### Build
 
-Build the application for production:
+Build the application for production (macOS DMG):
 
 ```bash
 npm run build
 ```
+
+The build artifacts will be generated in the `release/` directory.
+- DMG Installer: `release/<version>/KJump-Mac-<version>-Installer.dmg`
 
 ## Project Structure
 

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Plus, X } from 'lucide-react';
+import { X } from 'lucide-react';
 
 interface CreateLinkFormProps {
   onCreate: (title: string, url: string, tags?: string) => void;
