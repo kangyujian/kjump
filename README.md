@@ -2,6 +2,8 @@
 
 A powerful link management tool inspired by Raycast, built with Electron, React, TypeScript, and Vite.
 
+![KJump Screenshot](./image/image.jpg)
+
 ## Features
 
 - 🚀 Fast and efficient link management
