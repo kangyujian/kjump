@@ -18,7 +18,9 @@ function App() {
   const [quickCreateUrl, setQuickCreateUrl] = useState<string>('');
   const [quickCreateTitle, setQuickCreateTitle] = useState<string>('');
   const [editingLink, setEditingLink] = useState<Link | null>(null);
-  const { links: searchResults, loading } = useSearchLinks(searchQuery, links);
+  
+  const tag = selectedCategory.startsWith('tag:') ? selectedCategory.slice(4) : undefined;
+  const { links: searchResults, loading } = useSearchLinks(searchQuery, links, tag);
 
   // 显示搜索结果或所有链接，并应用标签过滤
   const filteredLinks = searchQuery ? searchResults : links;
@@ -193,44 +195,29 @@ function App() {
   };
 
   const handleUpdateLink = async (id: number, title: string, url: string, tags?: string) => {
-    console.log('handleUpdateLink called', { id, title, url, tags, isElectron: !!window.electronAPI });
-    
     // 处理标签为空的情况
     const processedTags = tags && tags.trim() ? tags.trim() : undefined;
     
-    // 定义本地更新逻辑
-    const performLocalUpdate = () => {
-      console.log('执行本地更新...', { processedTags });
+    try {
+      if (window.electronAPI) {
+        await window.electronAPI.updateLink(id, title, url, processedTags);
+      }
+      
+      // 更新本地状态（无论是 Electron 模式还是浏览器模式，都需要更新 UI）
       const updatedLinks = links.map(link => 
         link.id === id 
           ? { ...link, title, url, tags: processedTags, updated_at: new Date() }
           : link
       );
       setLinks(updatedLinks);
-      localStorage.setItem('kjump_links', JSON.stringify(updatedLinks));
-      setEditingLink(null);
-    };
-
-    try {
-      if (window.electronAPI) {
-        if (window.electronAPI.updateLink) {
-          await window.electronAPI.updateLink(id, title, url, processedTags);
-          // 假设 Electron 更新后会通过事件或其他方式刷新列表，或者我们也手动更新一下本地状态
-          // 这里为了保险，重新加载一下或者手动更新状态（取决于 Electron 通信机制）
-          // 暂时假设 Electron 会处理，如果未实现则回退
-        } else {
-          console.warn('Electron updateLink API not implemented, falling back to local update');
-          performLocalUpdate();
-        }
-      } else {
-        performLocalUpdate();
+      
+      if (!window.electronAPI) {
+        localStorage.setItem('kjump_links', JSON.stringify(updatedLinks));
       }
+      
+      setEditingLink(null);
     } catch (error) {
       console.error('更新链接失败:', error);
-      // 如果 Electron 更新失败，是否尝试本地更新？
-      // 也许不应该，避免数据不一致。但在开发阶段，这样更友好。
-      console.log('尝试本地更新作为回退...');
-      performLocalUpdate();
     }
   };
 

@@ -84,17 +84,25 @@ export function getAllLinks(): Link[] {
 /**
  * 搜索链接
  */
-export function searchLinks(query: string): Link[] {
-  const searchQuery = `
+export function searchLinks(query: string, tag?: string): Link[] {
+  let searchQuery = `
     SELECT * FROM links 
-    WHERE title LIKE ? OR url LIKE ? OR tags LIKE ?
-    ORDER BY visit_count DESC, created_at DESC
+    WHERE (title LIKE ? OR url LIKE ? OR tags LIKE ?)
   `;
   
   const searchTerm = `%${query}%`;
+  const params: any[] = [searchTerm, searchTerm, searchTerm];
+
+  if (tag) {
+    searchQuery += ` AND tags LIKE ?`;
+    params.push(`%${tag}%`);
+  }
+
+  searchQuery += ` ORDER BY visit_count DESC, created_at DESC`;
+  
   const stmt = db!.prepare(searchQuery);
   
-  return stmt.all(searchTerm, searchTerm, searchTerm) as Link[];
+  return stmt.all(...params) as Link[];
 }
 
 /**
@@ -118,6 +126,19 @@ export function createLink(link: Omit<Link, 'id' | 'visit_count' | 'created_at' 
     created_at: new Date(),
     updated_at: new Date()
   };
+}
+
+/**
+ * 更新链接
+ */
+export function updateLink(id: number, title: string, url: string, tags?: string): void {
+  const stmt = db!.prepare(`
+    UPDATE links 
+    SET title = ?, url = ?, tags = ?, updated_at = CURRENT_TIMESTAMP
+    WHERE id = ?
+  `);
+  
+  stmt.run(title, url, tags || null, id);
 }
 
 /**

@@ -3,7 +3,7 @@ import { release } from 'node:os'
 import { join, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
 // import { updateElectronApp, UpdateSourceType } from 'update-electron-app'
-import { initDatabase, searchLinks, getAllLinks, createLink, deleteLink, incrementVisitCount, closeDatabase } from '../src/services/database'
+import { initDatabase, searchLinks, getAllLinks, createLink, updateLink, deleteLink, incrementVisitCount, closeDatabase } from '../src/services/database'
 import { openUrl } from '../src/services/urlLauncher'
 import { getAllSettings } from '../src/services/settings'
 import { Link } from '../src/types/link'
@@ -216,8 +216,8 @@ app.on('will-quit', () => {
 })
 
 // IPC 通信处理
-ipcMain.handle('search-links', async (_event, query: string) => {
-  return searchLinks(query)
+ipcMain.handle('search-links', async (_event, query: string, tag?: string) => {
+  return searchLinks(query, tag)
 })
 
 ipcMain.handle('get-all-links', async () => {
@@ -226,6 +226,10 @@ ipcMain.handle('get-all-links', async () => {
 
 ipcMain.handle('create-link', async (_event, link: Omit<Link, 'id' | 'visit_count' | 'created_at' | 'updated_at'>) => {
   return createLink(link)
+})
+
+ipcMain.handle('update-link', async (_event, id: number, title: string, url: string, tags?: string) => {
+  return updateLink(id, title, url, tags)
 })
 
 ipcMain.handle('delete-link', async (_event, id: number) => {

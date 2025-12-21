@@ -22,8 +22,9 @@ contextBridge.exposeInMainWorld('ipcRenderer', {
 
 contextBridge.exposeInMainWorld('electronAPI', {
   getAllLinks: () => ipcRenderer.invoke('get-all-links'),
-  searchLinks: (query: string) => ipcRenderer.invoke('search-links', query),
+  searchLinks: (query: string, tag?: string) => ipcRenderer.invoke('search-links', query, tag),
   createLink: (link: any) => ipcRenderer.invoke('create-link', link),
+  updateLink: (id: number, title: string, url: string, tags?: string) => ipcRenderer.invoke('update-link', id, title, url, tags),
   deleteLink: (id: number) => ipcRenderer.invoke('delete-link', id),
   incrementVisitCount: (id: number) => ipcRenderer.invoke('increment-visit-count', id),
   openUrl: (url: string) => ipcRenderer.invoke('open-url', url),
