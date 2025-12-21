@@ -4,6 +4,7 @@ import { LinkItem } from './components/LinkItem';
 import { CreateLinkForm } from './components/CreateLinkForm';
 import { EditLinkForm } from './components/EditLinkForm';
 import { SettingsDialog } from './components/SettingsDialog';
+import { TagFilterButton } from './components/TagFilterButton';
 import { useSearchLinks } from './hooks/useSearchLinks';
 import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts';
 import { useLinkStore } from './store/linkStore';
@@ -12,15 +13,25 @@ import { Link } from './types/link';
 import './App.css';
 
 function App() {
-  const { links, searchQuery, selectedIndex, isCreating, setLinks, setSearchQuery, setSelectedIndex, setIsCreating } = useLinkStore();
+  const { links, searchQuery, selectedIndex, isCreating, selectedCategory, setLinks, setSearchQuery, setSelectedIndex, setIsCreating } = useLinkStore();
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [quickCreateUrl, setQuickCreateUrl] = useState<string>('');
   const [quickCreateTitle, setQuickCreateTitle] = useState<string>('');
   const [editingLink, setEditingLink] = useState<Link | null>(null);
   const { links: searchResults, loading } = useSearchLinks(searchQuery, links);
 
-  // 显示搜索结果或所有链接
-  const displayLinks = searchQuery ? searchResults : links;
+  // 显示搜索结果或所有链接，并应用标签过滤
+  const filteredLinks = searchQuery ? searchResults : links;
+  
+  const displayLinks = selectedCategory === 'all'
+    ? filteredLinks
+    : filteredLinks.filter(link => {
+        if (selectedCategory.startsWith('tag:')) {
+          const tag = selectedCategory.slice(4);
+          return (link.tags || '').split(',').map(t => t.trim()).includes(tag);
+        }
+        return true;
+      });
   
   // 调试信息
   useEffect(() => {
@@ -367,6 +378,7 @@ function App() {
             className="flex space-x-3"
             style={{ WebkitAppRegion: 'no-drag' } as any}
           >
+            <TagFilterButton />
             <button
               onClick={() => setIsCreating(true)}
               className="flex items-center space-x-2 px-4 py-2 bg-raycast-highlight hover:bg-raycast-highlight-hover rounded-raycast-sm transition-all duration-200 transform hover:scale-105 shadow-raycast"

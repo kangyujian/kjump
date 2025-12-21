@@ -6,10 +6,12 @@ interface LinkStore {
   searchQuery: string;
   selectedIndex: number;
   isCreating: boolean;
+  selectedCategory: string;
   setLinks: (links: Link[]) => void;
   setSearchQuery: (query: string) => void;
   setSelectedIndex: (index: number) => void;
   setIsCreating: (isCreating: boolean) => void;
+  setSelectedCategory: (category: string) => void;
 }
 
 export const useLinkStore = create<LinkStore>((set) => ({
@@ -17,6 +19,7 @@ export const useLinkStore = create<LinkStore>((set) => ({
   searchQuery: '',
   selectedIndex: 0,
   isCreating: false,
+  selectedCategory: 'all',
   setLinks: (links) => {
     console.log('LinkStore setLinks called with:', links.length, 'links');
     if (links.length > 0) {
@@ -26,5 +29,6 @@ export const useLinkStore = create<LinkStore>((set) => ({
   },
   setSearchQuery: (searchQuery) => set({ searchQuery, selectedIndex: 0 }),
   setSelectedIndex: (selectedIndex) => set({ selectedIndex }),
-  setIsCreating: (isCreating) => set({ isCreating })
+  setIsCreating: (isCreating) => set({ isCreating }),
+  setSelectedCategory: (selectedCategory) => set({ selectedCategory })
 }));
