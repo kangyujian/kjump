@@ -204,7 +204,7 @@ function App() {
       <div className="container mx-auto px-4 py-6 max-w-2xl">
         {/* 头部 */}
         <div className="flex items-center justify-between mb-6">
-          <h1 className="text-xl font-semibold text-raycast-text">链接管理器</h1>
+          <h1 className="text-xl font-semibold text-raycast-text">KJump</h1>
           <div className="flex space-x-2">
             <button
               onClick={() => setIsCreating(true)}
