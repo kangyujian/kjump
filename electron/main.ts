@@ -127,7 +127,7 @@ async function getSettingsFromDatabase() {
     return {
       window_width: '600',
       window_height: '400',
-      global_shortcut: 'Command+Shift+L'
+      global_shortcut: 'Alt+Space'
     }
   }
 }
@@ -166,8 +166,8 @@ app.whenReady().then(() => {
  * 注册全局快捷键
  */
 function registerGlobalShortcuts() {
-  // 默认快捷键
-  const shortcut = 'Command+Shift+L'
+  // 默认快捷键 - Option+空格 (macOS) / Alt+空格 (Windows/Linux)
+  const shortcut = process.platform === 'darwin' ? 'Alt+Space' : 'Alt+Space'
   
   // 注册全局快捷键
   const ret = globalShortcut.register(shortcut, () => {
