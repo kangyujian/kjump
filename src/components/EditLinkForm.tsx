@@ -66,11 +66,15 @@ export function EditLinkForm({ link, onUpdate, onCancel }: EditLinkFormProps) {
   return (
     <div className="fixed inset-0 bg-raycast-overlay backdrop-blur-raycast flex items-center justify-center z-50 animate-fade-in">
       <div className="bg-raycast-bg-secondary border border-raycast-border rounded-raycast-lg p-8 w-full max-w-md mx-4 shadow-raycast-lg animate-scale-in">
-        <div className="flex items-center justify-between mb-6">
+        <div 
+          className="flex items-center justify-between mb-6"
+          style={{ WebkitAppRegion: 'drag' } as any}
+        >
           <h3 className="text-xl font-semibold text-raycast-text">编辑链接</h3>
           <button
             onClick={onCancel}
             className="p-2 rounded-raycast-sm bg-raycast-bg-tertiary hover:bg-raycast-border transition-all duration-200 transform hover:scale-105"
+            style={{ WebkitAppRegion: 'no-drag' } as any}
           >
             <X className="w-5 h-5 text-raycast-text-secondary" />
           </button>

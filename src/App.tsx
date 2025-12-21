@@ -351,7 +351,10 @@ function App() {
     <div className="min-h-screen bg-raycast-bg text-raycast-text font-sf-pro animate-fade-in">
       <div className="container mx-auto px-6 py-8 max-w-3xl">
         {/* 头部 */}
-        <div className="flex items-center justify-between mb-8 animate-slide-up">
+        <div 
+          className="flex items-center justify-between mb-8 animate-slide-up"
+          style={{ WebkitAppRegion: 'drag' } as any}
+        >
           <div className="flex items-center space-x-3">
             <div className="w-8 h-8 bg-gradient-to-br from-raycast-highlight to-blue-600 rounded-raycast flex items-center justify-center">
               <LinkIcon className="w-5 h-5 text-white" />
@@ -360,7 +363,10 @@ function App() {
               KJump
             </h1>
           </div>
-          <div className="flex space-x-3">
+          <div 
+            className="flex space-x-3"
+            style={{ WebkitAppRegion: 'no-drag' } as any}
+          >
             <button
               onClick={() => setIsCreating(true)}
               className="flex items-center space-x-2 px-4 py-2 bg-raycast-highlight hover:bg-raycast-highlight-hover rounded-raycast-sm transition-all duration-200 transform hover:scale-105 shadow-raycast"

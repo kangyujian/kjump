@@ -12,11 +12,15 @@ export function SettingsDialog({ isOpen, onClose, onClearData }: SettingsDialogP
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-raycast-overlay backdrop-blur-raycast animate-fade-in">
       <div className="w-full max-w-md bg-raycast-bg-secondary border border-raycast-border rounded-raycast-lg shadow-raycast-lg overflow-hidden animate-scale-in">
-        <div className="flex items-center justify-between px-6 py-4 border-b border-raycast-border bg-raycast-bg-tertiary">
+        <div 
+          className="flex items-center justify-between px-6 py-4 border-b border-raycast-border bg-raycast-bg-tertiary"
+          style={{ WebkitAppRegion: 'drag' } as any}
+        >
           <h2 className="text-lg font-semibold text-raycast-text">设置</h2>
           <button
             onClick={onClose}
             className="p-2 rounded-raycast-sm bg-raycast-bg-tertiary hover:bg-raycast-border transition-all duration-200 transform hover:scale-105"
+            style={{ WebkitAppRegion: 'no-drag' } as any}
           >
             <X className="w-5 h-5 text-raycast-text-secondary" />
           </button>
