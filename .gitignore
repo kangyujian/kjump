@@ -12,6 +12,7 @@ node_modules
 dist
 dist-electron
 release
+!release/0.0.0/KJump-Mac-0.0.0-Installer.dmg
 
 # Local env files
 .env
