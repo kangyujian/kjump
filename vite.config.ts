@@ -29,7 +29,7 @@ export default defineConfig({
         },
       },
       {
-        entry: 'src/preload.ts',
+        entry: 'electron/preload.ts',
         onstart(options) {
           // Notify the Renderer-Process to reload the page when the Preload-Scripts build is complete, 
           // instead of restarting the entire Electron App.
@@ -37,11 +37,16 @@ export default defineConfig({
         },
         vite: {
           build: {
+            target: 'node16',
             sourcemap: 'inline',
             minify: process.env.ENV === 'production',
             outDir: 'dist-electron/preload',
             rollupOptions: {
               external: ['electron'],
+              output: {
+                format: 'cjs',
+                entryFileNames: '[name].cjs',
+              },
             },
           },
         },

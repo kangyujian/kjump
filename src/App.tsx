@@ -20,6 +20,47 @@ function App() {
   const displayLinks = searchQuery ? searchResults : links;
 
   useEffect(() => {
+    // 设置 Dock 图标 (仅 macOS)
+    if (window.electronAPI) {
+      const setDockIcon = async () => {
+        try {
+          const img = new Image();
+          img.src = '/icon.jpg';
+          img.onload = async () => {
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            if (!ctx) return;
+
+            // 设置画布大小 (512x512)
+            const size = 512;
+            canvas.width = size;
+            canvas.height = size;
+
+            // 清除画布
+            ctx.clearRect(0, 0, size, size);
+
+            // 绘制图片，留出 15% 的边距 (缩放到 70%)
+            // 实际上 macOS 图标通常需要一些 padding
+            // 我们将图片绘制在中心，大小为 400x400
+            const iconSize = 400;
+            const offset = (size - iconSize) / 2;
+            
+            // 绘制圆角矩形遮罩 (可选，如果图片本身没有圆角)
+            // macOS Dock 会自动应用圆角，所以这里只需要缩放
+            ctx.drawImage(img, offset, offset, iconSize, iconSize);
+
+            const dataUrl = canvas.toDataURL('image/png');
+            await window.electronAPI.setDockIcon(dataUrl);
+          };
+        } catch (error) {
+          console.error('设置 Dock 图标失败:', error);
+        }
+      };
+      setDockIcon();
+    }
+  }, []);
+
+  useEffect(() => {
     // 初始化时加载所有链接
     loadAllLinks();
   }, []);

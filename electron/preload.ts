@@ -27,4 +27,5 @@ contextBridge.exposeInMainWorld('electronAPI', {
   deleteLink: (id: number) => ipcRenderer.invoke('delete-link', id),
   incrementVisitCount: (id: number) => ipcRenderer.invoke('increment-visit-count', id),
   openUrl: (url: string) => ipcRenderer.invoke('open-url', url),
+  setDockIcon: (dataUrl: string) => ipcRenderer.invoke('set-dock-icon', dataUrl),
 })

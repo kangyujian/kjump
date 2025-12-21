@@ -1,4 +1,4 @@
-import { app, shell, BrowserWindow, ipcMain, globalShortcut, dialog } from 'electron'
+import { app, shell, BrowserWindow, ipcMain, globalShortcut, dialog, nativeImage } from 'electron'
 import { release } from 'node:os'
 import { join, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -37,6 +37,9 @@ process.env.PUBLIC = process.env.VITE_DEV_SERVER_URL ? join(process.env.DIST_ELE
 // Disable GPU Acceleration for Windows 7
 if (release().startsWith('6.1')) app.disableHardwareAcceleration()
 
+// Set application name
+app.setName('KJump')
+
 // Set application name for Windows 10+ notifications
 if (process.platform === 'win32') app.setAppUserModelId(app.getName())
 
@@ -49,7 +52,7 @@ if (!app.requestSingleInstanceLock()) {
   
   let win: BrowserWindow | null = null
 // Here, you can also use other preload
-const preload = join(__dirname, '../preload/index.js')
+const preload = join(__dirname, '../preload/preload.cjs')
 const url = process.env.VITE_DEV_SERVER_URL
 const indexHtml = join(process.env.DIST, 'index.html')
 
@@ -65,7 +68,7 @@ async function createWindow() {
   
   win = new BrowserWindow({
     title: 'KJump',
-    icon: join(process.env.PUBLIC || '', 'favicon.ico'),
+    icon: join(process.env.PUBLIC || '', 'icon.jpg'),
     width: parseInt((settings.window_width || '600') as string, 10),
     height: parseInt((settings.window_height || '400') as string, 10),
     minWidth: 400,
@@ -75,11 +78,9 @@ async function createWindow() {
     titleBarStyle: 'hiddenInset',
     webPreferences: {
       preload,
-      // Warning: Enable nodeIntegration and disable contextIsolation is not secure in production
-      // Consider using contextBridge.exposeInMainWorld
-      // Read more on https://www.electronjs.org/docs/latest/tutorial/context-isolation
-      nodeIntegration: true,
-      contextIsolation: false,
+      // Enable contextIsolation for security and to allow contextBridge usage
+      nodeIntegration: false,
+      contextIsolation: true,
       devTools: true,
     },
   })
@@ -143,6 +144,11 @@ app.whenReady().then(() => {
   
   // 创建窗口
   createWindow()
+
+  // 设置 macOS Dock 图标
+  if (process.platform === 'darwin') {
+    app.dock.setIcon(join(process.env.PUBLIC || '', 'icon.jpg'))
+  }
 
   app.on('browser-window-created', (_, window) => {
     // 默认设置窗口为隐藏
@@ -232,4 +238,11 @@ ipcMain.handle('increment-visit-count', async (_event, id: number) => {
 
 ipcMain.handle('open-url', async (_event, url: string) => {
   return openUrl(url)
+})
+
+ipcMain.handle('set-dock-icon', async (_event, dataUrl: string) => {
+  if (process.platform === 'darwin') {
+    const image = nativeImage.createFromDataURL(dataUrl)
+    app.dock.setIcon(image)
+  }
 })
