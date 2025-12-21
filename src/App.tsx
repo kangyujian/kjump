@@ -277,29 +277,37 @@ function App() {
   useKeyboardShortcuts(handleNavigateUp, handleNavigateDown, handleSelect, handleEscape, handleDeleteSelected);
 
   return (
-    <div className="min-h-screen bg-raycast-bg text-raycast-text font-sf-pro">
-      <div className="container mx-auto px-4 py-6 max-w-2xl">
+    <div className="min-h-screen bg-raycast-bg text-raycast-text font-sf-pro animate-fade-in">
+      <div className="container mx-auto px-6 py-8 max-w-3xl">
         {/* 头部 */}
-        <div className="flex items-center justify-between mb-6">
-          <h1 className="text-xl font-semibold text-raycast-text">KJump</h1>
-          <div className="flex space-x-2">
+        <div className="flex items-center justify-between mb-8 animate-slide-up">
+          <div className="flex items-center space-x-3">
+            <div className="w-8 h-8 bg-gradient-to-br from-raycast-highlight to-blue-600 rounded-raycast flex items-center justify-center">
+              <Link className="w-5 h-5 text-white" />
+            </div>
+            <h1 className="text-2xl font-semibold bg-gradient-to-r from-raycast-text to-raycast-text-secondary bg-clip-text text-transparent">
+              KJump
+            </h1>
+          </div>
+          <div className="flex space-x-3">
             <button
               onClick={() => setIsCreating(true)}
-              className="p-2 rounded-lg bg-raycast-border hover:bg-opacity-80 transition-colors"
+              className="flex items-center space-x-2 px-4 py-2 bg-raycast-highlight hover:bg-raycast-highlight-hover rounded-raycast-sm transition-all duration-200 transform hover:scale-105 shadow-raycast"
             >
-              <Plus className="w-5 h-5" />
+              <Plus className="w-4 h-4" />
+              <span className="text-sm font-medium">新建</span>
             </button>
             <button
               onClick={() => setIsSettingsOpen(true)}
-              className="p-2 rounded-lg bg-raycast-border hover:bg-opacity-80 transition-colors"
+              className="p-2 rounded-raycast-sm bg-raycast-bg-secondary hover:bg-raycast-bg-tertiary transition-all duration-200 transform hover:scale-105"
             >
-              <Settings className="w-5 h-5" />
+              <Settings className="w-4 h-4" />
             </button>
           </div>
         </div>
 
         {/* 搜索栏 */}
-        <div className="mb-6">
+        <div className="mb-8 animate-slide-up" style={{animationDelay: '0.1s'}}>
           <SearchBar
             value={searchQuery}
             onChange={setSearchQuery}
@@ -308,27 +316,42 @@ function App() {
         </div>
 
         {/* 链接列表 */}
-        <div className="space-y-2">
+        <div className="space-y-3">
           {loading ? (
-            <div className="text-center text-raycast-secondary py-8">
-              搜索中...
+            <div className="text-center text-raycast-text-secondary py-12">
+              <div className="animate-pulse space-y-4">
+                <div className="h-4 bg-raycast-bg-secondary rounded w-3/4 mx-auto"></div>
+                <div className="h-4 bg-raycast-bg-secondary rounded w-1/2 mx-auto"></div>
+              </div>
             </div>
           ) : displayLinks.length === 0 ? (
-            <div className="text-center py-8">
+            <div className="text-center py-12 animate-scale-in">
               {searchQuery && isValidUrl(searchQuery) ? (
-                <div className="text-raycast-secondary">
-                  <div className="flex items-center justify-center mb-2">
-                    <Link className="h-5 w-5 text-raycast-highlight mr-2" />
-                    <span className="text-raycast-highlight">检测到链接</span>
+                <div className="space-y-4">
+                  <div className="w-16 h-16 bg-raycast-bg-secondary rounded-full flex items-center justify-center mx-auto">
+                    <Link className="w-8 h-8 text-raycast-highlight" />
                   </div>
-                  <div className="text-sm mb-3">按回车键创建链接</div>
-                  <div className="text-xs text-raycast-secondary opacity-75">
-                    {searchQuery}
+                  <div>
+                    <div className="text-raycast-highlight font-medium mb-2">检测到有效链接</div>
+                    <div className="text-sm text-raycast-text-secondary mb-4">按回车键快速创建</div>
+                    <div className="text-xs text-raycast-text-tertiary bg-raycast-bg-secondary rounded-raycast-sm px-3 py-2 inline-block">
+                      {searchQuery}
+                    </div>
                   </div>
                 </div>
               ) : (
-                <div className="text-raycast-secondary">
-                  {searchQuery ? '没有找到匹配的链接' : '还没有保存任何链接'}
+                <div className="space-y-4">
+                  <div className="w-16 h-16 bg-raycast-bg-secondary rounded-full flex items-center justify-center mx-auto">
+                    <Link className="w-8 h-8 text-raycast-text-secondary" />
+                  </div>
+                  <div>
+                    <div className="text-raycast-text-secondary font-medium">
+                      {searchQuery ? '没有找到匹配的链接' : '还没有保存任何链接'}
+                    </div>
+                    <div className="text-sm text-raycast-text-tertiary mt-2">
+                      {searchQuery ? '尝试其他搜索词或创建新链接' : '点击上方按钮创建你的第一个链接'}
+                    </div>
+                  </div>
                 </div>
               )}
             </div>

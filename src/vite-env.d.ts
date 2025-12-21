@@ -9,15 +9,15 @@ interface ImportMeta {
 }
 
 interface ElectronAPI {
-  getAllLinks: () => Promise<any[]>;
-  searchLinks: (query: string) => Promise<any[]>;
-  createLink: (link: any) => Promise<any>;
-  deleteLink: (id: number) => Promise<void>;
-  incrementVisitCount: (id: number) => Promise<void>;
-  openUrl: (url: string) => Promise<void>;
-  setDockIcon: (dataUrl: string) => Promise<void>;
+  searchLinks: (query: string) => Promise<any[]>
+  getAllLinks: () => Promise<any[]>
+  createLink: (link: any) => Promise<any>
+  deleteLink: (id: number) => Promise<void>
+  incrementVisitCount: (id: number) => Promise<void>
+  openUrl: (url: string) => Promise<void>
+  setDockIcon: (dataUrl: string) => Promise<void>
 }
 
 interface Window {
-  electronAPI: ElectronAPI;
+  electronAPI: ElectronAPI
 }
