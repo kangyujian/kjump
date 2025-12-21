@@ -6,12 +6,14 @@ import { SettingsDialog } from './components/SettingsDialog';
 import { useSearchLinks } from './hooks/useSearchLinks';
 import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts';
 import { useLinkStore } from './store/linkStore';
-import { Plus, Settings } from 'lucide-react';
+import { Plus, Settings, Link } from 'lucide-react';
 import './App.css';
 
 function App() {
   const { links, searchQuery, selectedIndex, isCreating, setLinks, setSearchQuery, setSelectedIndex, setIsCreating } = useLinkStore();
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [quickCreateUrl, setQuickCreateUrl] = useState<string>('');
+  const [quickCreateTitle, setQuickCreateTitle] = useState<string>('');
   const { links: searchResults, loading } = useSearchLinks(searchQuery, links);
 
   // 显示搜索结果或所有链接
@@ -78,12 +80,16 @@ function App() {
         setLinks(updatedLinks);
         localStorage.setItem('kjump_links', JSON.stringify(updatedLinks));
         setIsCreating(false);
+        setQuickCreateUrl('');
+        setQuickCreateTitle('');
         return;
       }
 
       const newLink = await window.electronAPI.createLink({ title, url, tags });
       setLinks([newLink, ...links]);
       setIsCreating(false);
+      setQuickCreateUrl('');
+      setQuickCreateTitle('');
     } catch (error) {
       console.error('创建链接失败:', error);
     }
@@ -197,6 +203,36 @@ function App() {
     }
   };
 
+  const isValidUrl = (string: string): boolean => {
+    try {
+      const urlWithProtocol = string.startsWith('http://') || string.startsWith('https://') 
+        ? string 
+        : `https://${string}`;
+      
+      const url = new URL(urlWithProtocol);
+      return url.hostname.includes('.') && url.hostname.length > 3;
+    } catch (_) {
+      return false;
+    }
+  };
+
+  const handleSearchEnter = async (searchValue: string) => {
+    if (isValidUrl(searchValue) && displayLinks.length === 0) {
+      // 自动提取标题（使用URL的主机名作为标题）
+      const url = new URL(searchValue.startsWith('http://') || searchValue.startsWith('https://') 
+        ? searchValue 
+        : `https://${searchValue}`);
+      
+      const title = url.hostname.replace('www.', '').split('.')[0];
+      const capitalizedTitle = title.charAt(0).toUpperCase() + title.slice(1);
+      
+      // 设置预设值并显示创建弹窗
+      setQuickCreateUrl(searchValue);
+      setQuickCreateTitle(capitalizedTitle);
+      setIsCreating(true);
+    }
+  };
+
   useKeyboardShortcuts(handleNavigateUp, handleNavigateDown, handleSelect, handleEscape, handleDeleteSelected);
 
   return (
@@ -226,6 +262,7 @@ function App() {
           <SearchBar
             value={searchQuery}
             onChange={setSearchQuery}
+            onEnterPress={handleSearchEnter}
           />
         </div>
 
@@ -236,8 +273,23 @@ function App() {
               搜索中...
             </div>
           ) : displayLinks.length === 0 ? (
-            <div className="text-center text-raycast-secondary py-8">
-              {searchQuery ? '没有找到匹配的链接' : '还没有保存任何链接'}
+            <div className="text-center py-8">
+              {searchQuery && isValidUrl(searchQuery) ? (
+                <div className="text-raycast-secondary">
+                  <div className="flex items-center justify-center mb-2">
+                    <Link className="h-5 w-5 text-raycast-highlight mr-2" />
+                    <span className="text-raycast-highlight">检测到链接</span>
+                  </div>
+                  <div className="text-sm mb-3">按回车键创建链接</div>
+                  <div className="text-xs text-raycast-secondary opacity-75">
+                    {searchQuery}
+                  </div>
+                </div>
+              ) : (
+                <div className="text-raycast-secondary">
+                  {searchQuery ? '没有找到匹配的链接' : '还没有保存任何链接'}
+                </div>
+              )}
             </div>
           ) : (
             displayLinks.map((link, index) => (
@@ -257,7 +309,13 @@ function App() {
       {isCreating && (
         <CreateLinkForm
           onCreate={handleCreateLink}
-          onCancel={() => setIsCreating(false)}
+          onCancel={() => {
+            setIsCreating(false);
+            setQuickCreateUrl('');
+            setQuickCreateTitle('');
+          }}
+          initialTitle={quickCreateTitle}
+          initialUrl={quickCreateUrl}
         />
       )}
       

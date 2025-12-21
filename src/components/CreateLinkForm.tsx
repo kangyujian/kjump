@@ -1,18 +1,27 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { X } from 'lucide-react';
 
 interface CreateLinkFormProps {
   onCreate: (title: string, url: string, tags?: string) => void;
   onCancel: () => void;
+  initialTitle?: string;
+  initialUrl?: string;
+  initialTags?: string;
 }
 
 /**
  * 创建链接表单组件
  */
-export function CreateLinkForm({ onCreate, onCancel }: CreateLinkFormProps) {
-  const [title, setTitle] = useState('');
-  const [url, setUrl] = useState('');
-  const [tags, setTags] = useState('');
+export function CreateLinkForm({ onCreate, onCancel, initialTitle = '', initialUrl = '', initialTags = '' }: CreateLinkFormProps) {
+  const [title, setTitle] = useState(initialTitle);
+  const [url, setUrl] = useState(initialUrl);
+  const [tags, setTags] = useState(initialTags);
+  const titleInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    // 自动聚焦到标题输入框
+    titleInputRef.current?.focus();
+  }, []);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -43,6 +52,7 @@ export function CreateLinkForm({ onCreate, onCancel }: CreateLinkFormProps) {
               标题
             </label>
             <input
+              ref={titleInputRef}
               type="text"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
