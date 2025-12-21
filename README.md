@@ -1,4 +1,4 @@
-# Link Manager (KJump)
+# KJump
 
 A powerful link management tool inspired by Raycast, built with Electron, React, TypeScript, and Vite.
 
