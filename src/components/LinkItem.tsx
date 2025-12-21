@@ -1,4 +1,4 @@
-import { ExternalLink, Trash2 } from 'lucide-react';
+import { ExternalLink, Trash2, Edit } from 'lucide-react';
 import { Link } from '../types/link';
 
 interface LinkItemProps {
@@ -6,12 +6,13 @@ interface LinkItemProps {
   isSelected: boolean;
   onClick: () => void;
   onDelete: () => void;
+  onEdit: () => void;
 }
 
 /**
  * 链接列表项组件
  */
-export function LinkItem({ link, isSelected, onClick, onDelete }: LinkItemProps) {
+export function LinkItem({ link, isSelected, onClick, onDelete, onEdit }: LinkItemProps) {
   return (
     <div
       className={`
@@ -74,6 +75,15 @@ export function LinkItem({ link, isSelected, onClick, onDelete }: LinkItemProps)
             {link.visit_count}
           </div>
         )}
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            onEdit();
+          }}
+          className="p-2 rounded-raycast-sm bg-raycast-bg-tertiary hover:bg-raycast-highlight hover:bg-opacity-20 opacity-0 group-hover:opacity-100 transition-all duration-200 transform hover:scale-110"
+        >
+          <Edit className="w-4 h-4 text-raycast-text-secondary hover:text-raycast-highlight transition-colors duration-200" />
+        </button>
         <button
           onClick={(e) => {
             e.stopPropagation();

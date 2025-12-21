@@ -12,6 +12,7 @@ interface ElectronAPI {
   searchLinks: (query: string) => Promise<any[]>
   getAllLinks: () => Promise<any[]>
   createLink: (link: any) => Promise<any>
+  updateLink?: (id: number, title: string, url: string, tags?: string) => Promise<void>
   deleteLink: (id: number) => Promise<void>
   incrementVisitCount: (id: number) => Promise<void>
   openUrl: (url: string) => Promise<void>

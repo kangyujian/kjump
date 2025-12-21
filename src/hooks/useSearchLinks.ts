@@ -11,6 +11,7 @@ export function useSearchLinks(query: string, sourceLinks: Link[] = []) {
   useEffect(() => {
     const searchLinks = async () => {
       if (!query.trim()) {
+        console.log('搜索查询为空，显示所有链接');
         setLinks([]);
         return;
       }
@@ -24,11 +25,18 @@ export function useSearchLinks(query: string, sourceLinks: Link[] = []) {
         } else {
           // 浏览器模式：本地过滤
           const lowerQuery = query.toLowerCase();
-          const filtered = sourceLinks.filter(link => 
-            link.title.toLowerCase().includes(lowerQuery) || 
-            link.url.toLowerCase().includes(lowerQuery) ||
-            (link.tags && link.tags.toLowerCase().includes(lowerQuery))
-          );
+          console.log('搜索过滤 - 原始链接数:', sourceLinks.length, '查询:', lowerQuery);
+          const filtered = sourceLinks.filter(link => {
+            const matchTitle = link.title.toLowerCase().includes(lowerQuery);
+            const matchUrl = link.url.toLowerCase().includes(lowerQuery);
+            const matchTags = link.tags && link.tags.toLowerCase().includes(lowerQuery);
+            const hasMatch = matchTitle || matchUrl || matchTags;
+            if (hasMatch) {
+              console.log('匹配链接:', link.title, '标签:', link.tags);
+            }
+            return hasMatch;
+          });
+          console.log('搜索结果数:', filtered.length);
           setLinks(filtered);
         }
       } catch (error) {

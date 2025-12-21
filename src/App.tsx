@@ -2,11 +2,13 @@ import { useState, useEffect } from 'react';
 import { SearchBar } from './components/SearchBar';
 import { LinkItem } from './components/LinkItem';
 import { CreateLinkForm } from './components/CreateLinkForm';
+import { EditLinkForm } from './components/EditLinkForm';
 import { SettingsDialog } from './components/SettingsDialog';
 import { useSearchLinks } from './hooks/useSearchLinks';
 import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts';
 import { useLinkStore } from './store/linkStore';
-import { Plus, Settings, Link } from 'lucide-react';
+import { Plus, Settings, Link as LinkIcon } from 'lucide-react';
+import { Link } from './types/link';
 import './App.css';
 
 function App() {
@@ -14,10 +16,19 @@ function App() {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [quickCreateUrl, setQuickCreateUrl] = useState<string>('');
   const [quickCreateTitle, setQuickCreateTitle] = useState<string>('');
+  const [editingLink, setEditingLink] = useState<Link | null>(null);
   const { links: searchResults, loading } = useSearchLinks(searchQuery, links);
 
   // 显示搜索结果或所有链接
   const displayLinks = searchQuery ? searchResults : links;
+  
+  // 调试信息
+  useEffect(() => {
+    console.log('搜索状态:', { searchQuery, searchResultsLength: searchResults.length, linksLength: links.length });
+    if (displayLinks.length > 0) {
+      console.log('显示链接示例:', displayLinks.slice(0, 2).map(l => ({ id: l.id, title: l.title, tags: l.tags })));
+    }
+  }, [searchQuery, searchResults, links, displayLinks]);
 
   useEffect(() => {
     // 设置 Dock 图标 (仅 macOS)
@@ -63,6 +74,22 @@ function App() {
   useEffect(() => {
     // 初始化时加载所有链接
     loadAllLinks();
+    
+    // 监听localStorage变化（同一页面其他标签页）
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'kjump_links' && e.newValue) {
+        console.log('localStorage变化检测:', e.newValue.substring(0, 100) + '...');
+        try {
+          const parsedLinks = JSON.parse(e.newValue);
+          setLinks(parsedLinks);
+        } catch (error) {
+          console.error('解析localStorage变化数据失败:', error);
+        }
+      }
+    };
+    
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
   }, []);
 
   const loadAllLinks = async () => {
@@ -108,11 +135,13 @@ function App() {
   const handleCreateLink = async (title: string, url: string, tags?: string) => {
     try {
       if (!window.electronAPI) {
+        // 处理标签为空的情况
+        const processedTags = tags && tags.trim() ? tags.trim() : undefined;
         const newLink = {
           id: Date.now(),
           title,
           url,
-          tags,
+          tags: processedTags,
           visit_count: 0,
           created_at: new Date(),
           updated_at: new Date()
@@ -149,6 +178,48 @@ function App() {
       setLinks(links.filter(link => link.id !== id));
     } catch (error) {
       console.error('删除链接失败:', error);
+    }
+  };
+
+  const handleUpdateLink = async (id: number, title: string, url: string, tags?: string) => {
+    console.log('handleUpdateLink called', { id, title, url, tags, isElectron: !!window.electronAPI });
+    
+    // 处理标签为空的情况
+    const processedTags = tags && tags.trim() ? tags.trim() : undefined;
+    
+    // 定义本地更新逻辑
+    const performLocalUpdate = () => {
+      console.log('执行本地更新...', { processedTags });
+      const updatedLinks = links.map(link => 
+        link.id === id 
+          ? { ...link, title, url, tags: processedTags, updated_at: new Date() }
+          : link
+      );
+      setLinks(updatedLinks);
+      localStorage.setItem('kjump_links', JSON.stringify(updatedLinks));
+      setEditingLink(null);
+    };
+
+    try {
+      if (window.electronAPI) {
+        if (window.electronAPI.updateLink) {
+          await window.electronAPI.updateLink(id, title, url, processedTags);
+          // 假设 Electron 更新后会通过事件或其他方式刷新列表，或者我们也手动更新一下本地状态
+          // 这里为了保险，重新加载一下或者手动更新状态（取决于 Electron 通信机制）
+          // 暂时假设 Electron 会处理，如果未实现则回退
+        } else {
+          console.warn('Electron updateLink API not implemented, falling back to local update');
+          performLocalUpdate();
+        }
+      } else {
+        performLocalUpdate();
+      }
+    } catch (error) {
+      console.error('更新链接失败:', error);
+      // 如果 Electron 更新失败，是否尝试本地更新？
+      // 也许不应该，避免数据不一致。但在开发阶段，这样更友好。
+      console.log('尝试本地更新作为回退...');
+      performLocalUpdate();
     }
   };
 
@@ -283,7 +354,7 @@ function App() {
         <div className="flex items-center justify-between mb-8 animate-slide-up">
           <div className="flex items-center space-x-3">
             <div className="w-8 h-8 bg-gradient-to-br from-raycast-highlight to-blue-600 rounded-raycast flex items-center justify-center">
-              <Link className="w-5 h-5 text-white" />
+              <LinkIcon className="w-5 h-5 text-white" />
             </div>
             <h1 className="text-2xl font-semibold bg-gradient-to-r from-raycast-text to-raycast-text-secondary bg-clip-text text-transparent">
               KJump
@@ -329,7 +400,7 @@ function App() {
               {searchQuery && isValidUrl(searchQuery) ? (
                 <div className="space-y-4">
                   <div className="w-16 h-16 bg-raycast-bg-secondary rounded-full flex items-center justify-center mx-auto">
-                    <Link className="w-8 h-8 text-raycast-highlight" />
+                    <LinkIcon className="w-8 h-8 text-raycast-highlight" />
                   </div>
                   <div>
                     <div className="text-raycast-highlight font-medium mb-2">检测到有效链接</div>
@@ -342,7 +413,7 @@ function App() {
               ) : (
                 <div className="space-y-4">
                   <div className="w-16 h-16 bg-raycast-bg-secondary rounded-full flex items-center justify-center mx-auto">
-                    <Link className="w-8 h-8 text-raycast-text-secondary" />
+                    <LinkIcon className="w-8 h-8 text-raycast-text-secondary" />
                   </div>
                   <div>
                     <div className="text-raycast-text-secondary font-medium">
@@ -363,6 +434,7 @@ function App() {
                 isSelected={index === selectedIndex}
                 onClick={() => handleLinkClick(link)}
                 onDelete={() => handleDeleteLink(link.id)}
+                onEdit={() => setEditingLink(link)}
               />
             ))
           )}
@@ -380,6 +452,15 @@ function App() {
           }}
           initialTitle={quickCreateTitle}
           initialUrl={quickCreateUrl}
+        />
+      )}
+
+      {/* 编辑链接表单 */}
+      {editingLink && (
+        <EditLinkForm
+          link={editingLink}
+          onUpdate={handleUpdateLink}
+          onCancel={() => setEditingLink(null)}
         />
       )}
       

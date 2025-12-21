@@ -17,7 +17,13 @@ export const useLinkStore = create<LinkStore>((set) => ({
   searchQuery: '',
   selectedIndex: 0,
   isCreating: false,
-  setLinks: (links) => set({ links }),
+  setLinks: (links) => {
+    console.log('LinkStore setLinks called with:', links.length, 'links');
+    if (links.length > 0) {
+      console.log('First link sample:', { id: links[0].id, title: links[0].title, tags: links[0].tags });
+    }
+    return set({ links });
+  },
   setSearchQuery: (searchQuery) => set({ searchQuery, selectedIndex: 0 }),
   setSelectedIndex: (selectedIndex) => set({ selectedIndex }),
   setIsCreating: (isCreating) => set({ isCreating })
