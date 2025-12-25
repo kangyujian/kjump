@@ -29,4 +29,9 @@ contextBridge.exposeInMainWorld('electronAPI', {
   incrementVisitCount: (id: number) => ipcRenderer.invoke('increment-visit-count', id),
   openUrl: (url: string) => ipcRenderer.invoke('open-url', url),
   setDockIcon: (dataUrl: string) => ipcRenderer.invoke('set-dock-icon', dataUrl),
+  getTasksByDate: (date: string) => ipcRenderer.invoke('get-tasks-by-date', date),
+  createTask: (task: { title: string; notes?: string; date: string }) => ipcRenderer.invoke('create-task', task),
+  updateTask: (id: number, fields: { title?: string; notes?: string; date?: string }) => ipcRenderer.invoke('update-task', id, fields),
+  toggleTaskCompleted: (id: number, completed: boolean) => ipcRenderer.invoke('toggle-task-completed', id, completed),
+  deleteTask: (id: number) => ipcRenderer.invoke('delete-task', id),
 })

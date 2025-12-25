@@ -11,6 +11,7 @@ import { useLinkStore } from './store/linkStore';
 import { Plus, Settings, Link as LinkIcon } from 'lucide-react';
 import { Link } from './types/link';
 import './App.css';
+import TaskManager from './pages/TaskManager';
 
 function App() {
   const { links, searchQuery, selectedIndex, isCreating, selectedCategory, setLinks, setSearchQuery, setSelectedIndex, setIsCreating } = useLinkStore();
@@ -18,6 +19,7 @@ function App() {
   const [quickCreateUrl, setQuickCreateUrl] = useState<string>('');
   const [quickCreateTitle, setQuickCreateTitle] = useState<string>('');
   const [editingLink, setEditingLink] = useState<Link | null>(null);
+  const [view, setView] = useState<'links' | 'tasks'>('links');
   
   const tag = selectedCategory.startsWith('tag:') ? selectedCategory.slice(4) : undefined;
   const { links: searchResults, loading } = useSearchLinks(searchQuery, links, tag);
@@ -82,6 +84,25 @@ function App() {
       };
       setDockIcon();
     }
+  }, []);
+
+  useEffect(() => {
+    if (window.ipcRenderer) {
+      window.ipcRenderer.on('navigate-to-tasks', () => {
+        setView('tasks');
+      });
+    }
+  }, []);
+
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 't') {
+        e.preventDefault();
+        setView('tasks');
+      }
+    };
+    document.addEventListener('keydown', handler);
+    return () => document.removeEventListener('keydown', handler);
   }, []);
 
   useEffect(() => {
@@ -365,7 +386,13 @@ function App() {
             className="flex space-x-3"
             style={{ WebkitAppRegion: 'no-drag' } as any}
           >
-            <TagFilterButton />
+            {view === 'links' && <TagFilterButton />}
+            <button
+              onClick={() => setView(view === 'tasks' ? 'links' : 'tasks')}
+              className="flex items-center space-x-2 px-4 py-2 bg-raycast-bg-secondary hover:bg-raycast-bg-tertiary rounded-raycast-sm transition-all duration-200 transform hover:scale-105"
+            >
+              <span className="text-sm font-medium">{view === 'tasks' ? '返回链接' : '任务'}</span>
+            </button>
             <button
               onClick={() => setIsCreating(true)}
               className="flex items-center space-x-2 px-4 py-2 bg-raycast-highlight hover:bg-raycast-highlight-hover rounded-raycast-sm transition-all duration-200 transform hover:scale-105 shadow-raycast"
@@ -382,72 +409,77 @@ function App() {
           </div>
         </div>
 
-        {/* 搜索栏 */}
-        <div className="mb-8 animate-slide-up" style={{animationDelay: '0.1s'}}>
-          <SearchBar
-            value={searchQuery}
-            onChange={setSearchQuery}
-            onEnterPress={handleSearchEnter}
-          />
-        </div>
-
-        {/* 链接列表 */}
-        <div className="space-y-3">
-          {loading ? (
-            <div className="text-center text-raycast-text-secondary py-12">
-              <div className="animate-pulse space-y-4">
-                <div className="h-4 bg-raycast-bg-secondary rounded w-3/4 mx-auto"></div>
-                <div className="h-4 bg-raycast-bg-secondary rounded w-1/2 mx-auto"></div>
-              </div>
+        {view === 'links' ? (
+          <>
+            {/* 搜索栏 */}
+            <div className="mb-8 animate-slide-up" style={{animationDelay: '0.1s'}}>
+              <SearchBar
+                value={searchQuery}
+                onChange={setSearchQuery}
+                onEnterPress={handleSearchEnter}
+              />
             </div>
-          ) : displayLinks.length === 0 ? (
-            <div className="text-center py-12 animate-scale-in">
-              {searchQuery && isValidUrl(searchQuery) ? (
-                <div className="space-y-4">
-                  <div className="w-16 h-16 bg-raycast-bg-secondary rounded-full flex items-center justify-center mx-auto">
-                    <LinkIcon className="w-8 h-8 text-raycast-highlight" />
+            {/* 链接列表 */}
+            <div className="space-y-3">
+              {loading ? (
+                <div className="text-center text-raycast-text-secondary py-12">
+                  <div className="animate-pulse space-y-4">
+                    <div className="h-4 bg-raycast-bg-secondary rounded w-3/4 mx-auto"></div>
+                    <div className="h-4 bg-raycast-bg-secondary rounded w-1/2 mx-auto"></div>
                   </div>
-                  <div>
-                    <div className="text-raycast-highlight font-medium mb-2">检测到有效链接</div>
-                    <div className="text-sm text-raycast-text-secondary mb-4">按回车键快速创建</div>
-                    <div className="text-xs text-raycast-text-tertiary bg-raycast-bg-secondary rounded-raycast-sm px-3 py-2 inline-block">
-                      {searchQuery}
+                </div>
+              ) : displayLinks.length === 0 ? (
+                <div className="text-center py-12 animate-scale-in">
+                  {searchQuery && isValidUrl(searchQuery) ? (
+                    <div className="space-y-4">
+                      <div className="w-16 h-16 bg-raycast-bg-secondary rounded-full flex items-center justify-center mx-auto">
+                        <LinkIcon className="w-8 h-8 text-raycast-highlight" />
+                      </div>
+                      <div>
+                        <div className="text-raycast-highlight font-medium mb-2">检测到有效链接</div>
+                        <div className="text-sm text-raycast-text-secondary mb-4">按回车键快速创建</div>
+                        <div className="text-xs text-raycast-text-tertiary bg-raycast-bg-secondary rounded-raycast-sm px-3 py-2 inline-block">
+                          {searchQuery}
+                        </div>
+                      </div>
                     </div>
-                  </div>
+                  ) : (
+                    <div className="space-y-4">
+                      <div className="w-16 h-16 bg-raycast-bg-secondary rounded-full flex items-center justify-center mx-auto">
+                        <LinkIcon className="w-8 h-8 text-raycast-text-secondary" />
+                      </div>
+                      <div>
+                        <div className="text-raycast-text-secondary font-medium">
+                          {searchQuery ? '没有找到匹配的链接' : '还没有保存任何链接'}
+                        </div>
+                        <div className="text-sm text-raycast-text-tertiary mt-2">
+                          {searchQuery ? '尝试其他搜索词或创建新链接' : '点击上方按钮创建你的第一个链接'}
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
               ) : (
-                <div className="space-y-4">
-                  <div className="w-16 h-16 bg-raycast-bg-secondary rounded-full flex items-center justify-center mx-auto">
-                    <LinkIcon className="w-8 h-8 text-raycast-text-secondary" />
-                  </div>
-                  <div>
-                    <div className="text-raycast-text-secondary font-medium">
-                      {searchQuery ? '没有找到匹配的链接' : '还没有保存任何链接'}
-                    </div>
-                    <div className="text-sm text-raycast-text-tertiary mt-2">
-                      {searchQuery ? '尝试其他搜索词或创建新链接' : '点击上方按钮创建你的第一个链接'}
-                    </div>
-                  </div>
-                </div>
+                displayLinks.map((link, index) => (
+                  <LinkItem
+                    key={link.id}
+                    link={link}
+                    isSelected={index === selectedIndex}
+                    onClick={() => handleLinkClick(link)}
+                    onDelete={() => handleDeleteLink(link.id)}
+                    onEdit={() => setEditingLink(link)}
+                  />
+                ))
               )}
             </div>
-          ) : (
-            displayLinks.map((link, index) => (
-              <LinkItem
-                key={link.id}
-                link={link}
-                isSelected={index === selectedIndex}
-                onClick={() => handleLinkClick(link)}
-                onDelete={() => handleDeleteLink(link.id)}
-                onEdit={() => setEditingLink(link)}
-              />
-            ))
-          )}
-        </div>
+          </>
+        ) : (
+          <TaskManager />
+        )}
       </div>
 
       {/* 创建链接表单 */}
-      {isCreating && (
+      {isCreating && view === 'links' && (
         <CreateLinkForm
           onCreate={handleCreateLink}
           onCancel={() => {
@@ -461,7 +493,7 @@ function App() {
       )}
 
       {/* 编辑链接表单 */}
-      {editingLink && (
+      {editingLink && view === 'links' && (
         <EditLinkForm
           link={editingLink}
           onUpdate={handleUpdateLink}

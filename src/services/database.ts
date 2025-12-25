@@ -2,6 +2,7 @@ import Database from 'better-sqlite3';
 import path from 'path';
 import { app } from 'electron';
 import { Link } from '../types/link';
+import { Task } from '../types/task';
 
 let db: Database.Database | null = null;
 
@@ -14,6 +15,7 @@ export function initDatabase(): void {
   
   createTables();
   insertDefaultSettings();
+  insertSampleTasks();
 }
 
 /**
@@ -41,15 +43,35 @@ function createTables(): void {
     )
   `;
 
+  const createTasksTable = `
+    CREATE TABLE IF NOT EXISTS tasks (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      title TEXT NOT NULL,
+      notes TEXT,
+      date TEXT NOT NULL,
+      completed INTEGER DEFAULT 0,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    )
+  `;
+
   const createLinksIndexes = `
     CREATE INDEX IF NOT EXISTS idx_links_title ON links(title);
     CREATE INDEX IF NOT EXISTS idx_links_url ON links(url);
     CREATE INDEX IF NOT EXISTS idx_links_created_at ON links(created_at DESC);
   `;
 
+  const createTasksIndexes = `
+    CREATE INDEX IF NOT EXISTS idx_tasks_date ON tasks(date);
+    CREATE INDEX IF NOT EXISTS idx_tasks_completed ON tasks(completed);
+    CREATE INDEX IF NOT EXISTS idx_tasks_updated_at ON tasks(updated_at DESC);
+  `;
+
   db!.exec(createLinksTable);
   db!.exec(createSettingsTable);
+  db!.exec(createTasksTable);
   db!.exec(createLinksIndexes);
+  db!.exec(createTasksIndexes);
 }
 
 /**
@@ -70,6 +92,18 @@ function insertDefaultSettings(): void {
   }
 }
 
+/**
+ * 若任务表为空，则插入示例任务
+ */
+function insertSampleTasks(): void {
+  const count = db!.prepare('SELECT COUNT(1) as c FROM tasks').get() as { c: number };
+  if (count.c > 0) return;
+  const today = new Date().toISOString().slice(0, 10);
+  const stmt = db!.prepare('INSERT INTO tasks (title, notes, date) VALUES (?, ?, ?)');
+  stmt.run('了解项目结构', '浏览并熟悉现有链接管理模块', today);
+  stmt.run('设计任务管理PRD', '明确按天归档与交互', today);
+  stmt.run('实现任务页UI', '美观、简洁且键盘友好', today);
+}
 /**
  * 获取所有链接
  */
@@ -159,6 +193,78 @@ export function incrementVisitCount(id: number): void {
  */
 export function deleteLink(id: number): void {
   const stmt = db!.prepare('DELETE FROM links WHERE id = ?');
+  stmt.run(id);
+}
+
+/**
+ * 获取某一天的任务列表
+ */
+export function getTasksByDate(date: string): Task[] {
+  const stmt = db!.prepare(`
+    SELECT * FROM tasks
+    WHERE date = ?
+    ORDER BY completed ASC, updated_at DESC
+  `);
+  return stmt.all(date) as Task[];
+}
+
+/**
+ * 创建任务
+ */
+export function createTask(input: Omit<Task, 'id' | 'completed' | 'created_at' | 'updated_at'>): Task {
+  const stmt = db!.prepare(`
+    INSERT INTO tasks (title, notes, date)
+    VALUES (?, ?, ?)
+  `);
+  const result = stmt.run(input.title, input.notes || null, input.date);
+  return {
+    id: result.lastInsertRowid as number,
+    title: input.title,
+    notes: input.notes,
+    date: input.date,
+    completed: 0,
+    created_at: new Date(),
+    updated_at: new Date(),
+  };
+}
+
+/**
+ * 更新任务内容
+ */
+export function updateTask(
+  id: number,
+  fields: { title?: string; notes?: string; date?: string }
+): void {
+  const current = db!.prepare('SELECT * FROM tasks WHERE id = ?').get(id) as Task | undefined;
+  if (!current) return;
+  const title = fields.title ?? current.title;
+  const notes = fields.notes ?? current.notes ?? null;
+  const date = fields.date ?? current.date;
+  const stmt = db!.prepare(`
+    UPDATE tasks
+    SET title = ?, notes = ?, date = ?, updated_at = CURRENT_TIMESTAMP
+    WHERE id = ?
+  `);
+  stmt.run(title, notes, date, id);
+}
+
+/**
+ * 勾选/取消完成状态
+ */
+export function toggleTaskCompleted(id: number, completed: boolean): void {
+  const stmt = db!.prepare(`
+    UPDATE tasks
+    SET completed = ?, updated_at = CURRENT_TIMESTAMP
+    WHERE id = ?
+  `);
+  stmt.run(completed ? 1 : 0, id);
+}
+
+/**
+ * 删除任务
+ */
+export function deleteTask(id: number): void {
+  const stmt = db!.prepare('DELETE FROM tasks WHERE id = ?');
   stmt.run(id);
 }
 

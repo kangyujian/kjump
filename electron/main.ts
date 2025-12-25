@@ -3,7 +3,7 @@ import { release } from 'node:os'
 import { join, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
 // import { updateElectronApp, UpdateSourceType } from 'update-electron-app'
-import { initDatabase, searchLinks, getAllLinks, createLink, updateLink, deleteLink, incrementVisitCount, closeDatabase } from '../src/services/database'
+import { initDatabase, searchLinks, getAllLinks, createLink, updateLink, deleteLink, incrementVisitCount, closeDatabase, getTasksByDate, createTask, updateTask, deleteTask, toggleTaskCompleted } from '../src/services/database'
 import { openUrl } from '../src/services/urlLauncher'
 import { getAllSettings } from '../src/services/settings'
 import { Link } from '../src/types/link'
@@ -190,6 +190,21 @@ function registerGlobalShortcuts() {
   if (!ret) {
     console.log('全局快捷键注册失败')
   }
+
+  // 任务页面快捷键 Alt+Shift+T
+  const tasksShortcut = 'Alt+Shift+T'
+  const ok = globalShortcut.register(tasksShortcut, () => {
+    if (win) {
+      if (!win.isVisible()) {
+        win.show()
+      }
+      win.focus()
+      win.webContents.send('navigate-to-tasks')
+    }
+  })
+  if (!ok) {
+    console.log('任务页面快捷键注册失败')
+  }
 }
 
 app.on('window-all-closed', () => {
@@ -249,4 +264,25 @@ ipcMain.handle('set-dock-icon', async (_event, dataUrl: string) => {
     const image = nativeImage.createFromDataURL(dataUrl)
     app.dock.setIcon(image)
   }
+})
+
+// 任务管理 IPC
+ipcMain.handle('get-tasks-by-date', async (_event, date: string) => {
+  return getTasksByDate(date)
+})
+
+ipcMain.handle('create-task', async (_event, task: { title: string; notes?: string; date: string }) => {
+  return createTask(task)
+})
+
+ipcMain.handle('update-task', async (_event, id: number, fields: { title?: string; notes?: string; date?: string }) => {
+  return updateTask(id, fields)
+})
+
+ipcMain.handle('toggle-task-completed', async (_event, id: number, completed: boolean) => {
+  return toggleTaskCompleted(id, completed)
+})
+
+ipcMain.handle('delete-task', async (_event, id: number) => {
+  return deleteTask(id)
 })
