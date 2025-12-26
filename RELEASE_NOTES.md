@@ -1,80 +1,95 @@
 # KJump v1.1.0 Release Notes
 
-## 🎯 版本概述
-KJump v1.1.0 带来了智能URL检测和快速链接创建功能，大幅提升了用户体验和工作效率。
+[English](#english) | [中文](#中文)
 
-## ✨ 主要功能特性
+## English
 
-### 🔍 智能URL检测
-- **实时检测**: 搜索栏实时识别用户输入的URL格式
-- **格式支持**: 支持多种URL格式（`example.com`、`www.example.com`、`https://example.com`）
-- **智能提示**: 检测到URL时显示链接图标和创建提示
+### Overview
 
-### ⚡ 快速链接创建
-- **一键触发**: 输入URL后按回车键即可快速创建
-- **弹窗编辑**: 显示创建表单让用户确认和编辑信息
-- **自动填充**: 自动从URL提取主机名作为标题
-- **完整编辑**: 支持修改标题、URL和标签
+KJump v1.1.0 adds smart URL detection and quick link creation to make saving links faster and more consistent.
 
-### 🎨 用户体验优化
-- **视觉反馈**: 链接图标提示和友好的界面文字
-- **自动聚焦**: 弹窗打开时自动聚焦标题输入框
-- **状态管理**: 完善的预设值清理和状态同步
+### Key features
 
-## 🔧 技术实现
+#### Smart URL detection
 
-### 核心组件增强
-- **SearchBar组件**: 新增URL验证和回车键监听功能
-- **CreateLinkForm组件**: 支持预设值和自动聚焦
-- **App组件**: 优化链接创建逻辑和状态管理
+- Real-time detection of URL-like input in the search bar
+- Supports multiple formats: `example.com`, `www.example.com`, `https://example.com`
+- Shows a clear create prompt when a URL is detected
 
-### 代码质量
-- **类型安全**: 完整的TypeScript类型定义
-- **错误处理**: 完善的异常捕获和用户提示
-- **性能优化**: 实时检测和响应式更新
+#### Quick link creation
 
-## 🚀 使用场景
+- Press `Enter` on a detected URL to start creating a link
+- Opens a creation form for confirmation and edits
+- Auto-fills the title from the URL host
+- Allows editing title, URL, and tags before saving
 
-1. **快速收藏**: 发现好网站时直接粘贴URL按回车即可保存
-2. **批量添加**: 支持连续添加多个链接，提高效率
-3. **智能命名**: 自动提取有意义的标题，减少输入工作
-4. **灵活编辑**: 在创建前可以调整所有信息
+#### UX improvements
 
-## 📊 版本对比
+- Better visual feedback for URL detection and creation state
+- Auto-focuses the title field when the create dialog opens
+- Cleaner state reset and synchronization after creation
 
-| 功能 | v1.0.0 | v1.1.0 |
-|------|--------|--------|
-| 基础链接管理 | ✅ | ✅ |
-| 搜索功能 | ✅ | ✅ |
-| URL检测 | ❌ | ✅ |
-| 快速创建 | ❌ | ✅ |
-| 弹窗编辑 | ❌ | ✅ |
-| 自动聚焦 | ❌ | ✅ |
+### Implementation notes
 
-## 🎉 用户价值
+- Enhanced `SearchBar` with URL validation and `Enter` handling
+- Enhanced `CreateLinkForm` with preset values and auto-focus
+- Updated `App` to streamline creation flow and state management
 
-- **效率提升**: 减少了手动创建链接的步骤
-- **体验优化**: 更直观的交互流程
-- **智能化**: 自动识别和处理URL格式
-- **灵活性**: 在创建前可以充分编辑和调整
+### Typical workflows
 
-## 📦 安装包信息
+1. Paste a URL into the search bar
+2. Press `Enter` to open the create dialog
+3. Adjust title/URL/tags if needed
+4. Click "Create" to save
 
-### macOS
-- **文件**: `KJump-Mac-0.0.0-Installer.dmg`
-- **大小**: 108MB
-- **系统要求**: macOS 10.11 或更高版本
+### Downloads
 
-## 🔗 下载地址
+Get the installers from GitHub Releases:
 
-请访问 [GitHub Releases](https://github.com/kangyujian/kjump/releases/tag/v1.1.0) 页面下载对应平台的安装包。
+- `https://github.com/kangyujian/kjump/releases/tag/v1.1.0`
 
-## 💡 使用说明
+## 中文
 
-1. 在搜索栏输入任何URL格式（如`github.com`）
-2. 系统检测到URL后显示创建提示
-3. 按回车键触发创建弹窗
-4. 编辑标题、URL和标签（可选）
-5. 点击"创建"保存链接
+### 版本概述
 
-这个版本让KJump从传统的链接管理工具升级为智能化的链接收藏助手！
+KJump v1.1.0 带来了智能 URL 检测和快速链接创建功能，用更少的步骤完成链接收藏。
+
+### 主要功能
+
+#### 智能 URL 检测
+
+- 搜索栏实时识别用户输入的 URL 格式
+- 支持多种 URL 格式：`example.com`、`www.example.com`、`https://example.com`
+- 检测到 URL 时显示明确的创建提示
+
+#### 快速链接创建
+
+- 输入 URL 后按 `Enter` 触发创建
+- 打开创建表单，支持确认与编辑
+- 自动从 URL 提取主机名作为标题
+- 支持修改标题、URL 和标签
+
+#### 体验优化
+
+- URL 检测与创建提示更清晰
+- 弹窗打开时自动聚焦标题输入框
+- 预设值清理与状态同步更完善
+
+### 技术实现
+
+- `SearchBar`：新增 URL 校验与回车监听
+- `CreateLinkForm`：支持预设值与自动聚焦
+- `App`：优化创建流程与状态管理
+
+### 使用说明
+
+1. 在搜索栏输入任意 URL（如 `github.com`）
+2. 检测到 URL 后按 `Enter` 打开创建弹窗
+3. 编辑标题、URL、标签（可选）
+4. 点击「创建」保存链接
+
+### 下载地址
+
+请访问 GitHub Releases 下载：
+
+- `https://github.com/kangyujian/kjump/releases/tag/v1.1.0`
