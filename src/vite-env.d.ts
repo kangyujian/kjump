@@ -17,6 +17,11 @@ interface ElectronAPI {
   incrementVisitCount: (id: number) => Promise<void>
   openUrl: (url: string) => Promise<void>
   setDockIcon: (dataUrl: string) => Promise<void>
+  getTasksByDate: (date: string) => Promise<any[]>
+  createTask: (task: { title: string; notes?: string; date: string }) => Promise<any>
+  updateTask: (id: number, fields: { title?: string; notes?: string; date?: string }) => Promise<void>
+  toggleTaskCompleted: (id: number, completed: boolean) => Promise<void>
+  deleteTask: (id: number) => Promise<void>
 }
 
 interface Window {

@@ -14,7 +14,7 @@
   },
   "dependencies": {
     "autoprefixer": "^10.4.16",
-    "better-sqlite3": "^9.6.0",
+    "better-sqlite3": "^12.5.0",
     "lucide-react": "^0.294.0",
     "postcss": "^8.4.31",
     "react": "^18.2.0",
@@ -41,5 +41,5 @@
     "vite-plugin-electron-renderer": "^0.14.5"
   },
   "description": "A keyboard-first link management tool inspired by Raycast, built with Electron, React, and TypeScript.",
-  "main": "dist-electron/main/main.js"
+  "main": "dist-electron/main/index.js"
 }

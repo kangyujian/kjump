@@ -118,7 +118,7 @@ function TaskEditor({
  * 任务管理页面
  */
 export default function TaskManager() {
-  const { tasks, selectedDate, selectedIndex, isCreating, setTasks, setSelectedDate, setSelectedIndex, setIsCreating } =
+  const { tasks, selectedDate, selectedIndex, isCreating, setTasks, setSelectedDate, setIsCreating } =
     useTaskStore();
   const [editing, setEditing] = useState<Task | null>(null);
   const [onlyIncomplete, setOnlyIncomplete] = useState(false);
