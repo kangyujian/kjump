@@ -8,13 +8,16 @@ import { TagFilterButton } from './components/TagFilterButton';
 import { useSearchLinks } from './hooks/useSearchLinks';
 import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts';
 import { useLinkStore } from './store/linkStore';
+import { useTaskStore } from './store/taskStore';
 import { Plus, Settings, Link as LinkIcon } from 'lucide-react';
 import { Link } from './types/link';
+import { isValidUrl } from './utils/url';
 import './App.css';
 import TaskManager from './pages/TaskManager';
 
 function App() {
   const { links, searchQuery, selectedIndex, isCreating, selectedCategory, setLinks, setSearchQuery, setSelectedIndex, setIsCreating } = useLinkStore();
+  const setIsCreatingTask = useTaskStore((s) => s.setIsCreating);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [quickCreateUrl, setQuickCreateUrl] = useState<string>('');
   const [quickCreateTitle, setQuickCreateTitle] = useState<string>('');
@@ -334,19 +337,6 @@ function App() {
     }
   };
 
-  const isValidUrl = (string: string): boolean => {
-    try {
-      const urlWithProtocol = string.startsWith('http://') || string.startsWith('https://') 
-        ? string 
-        : `https://${string}`;
-      
-      const url = new URL(urlWithProtocol);
-      return url.hostname.includes('.') && url.hostname.length > 3;
-    } catch (_) {
-      return false;
-    }
-  };
-
   const handleSearchEnter = async (searchValue: string) => {
     if (isValidUrl(searchValue) && displayLinks.length === 0) {
       // 自动提取标题（使用URL的主机名作为标题）
@@ -365,6 +355,14 @@ function App() {
   };
 
   useKeyboardShortcuts(handleNavigateUp, handleNavigateDown, handleSelect, handleEscape, handleDeleteSelected);
+
+  const handleHeaderCreate = () => {
+    if (view === 'tasks') {
+      setIsCreatingTask(true);
+      return;
+    }
+    setIsCreating(true);
+  };
 
   return (
     <div className="min-h-screen bg-raycast-bg text-raycast-text font-sf-pro animate-fade-in">
@@ -394,7 +392,7 @@ function App() {
               <span className="text-sm font-medium">{view === 'tasks' ? '返回链接' : '任务'}</span>
             </button>
             <button
-              onClick={() => setIsCreating(true)}
+              onClick={handleHeaderCreate}
               className="flex items-center space-x-2 px-4 py-2 bg-raycast-highlight hover:bg-raycast-highlight-hover rounded-raycast-sm transition-all duration-200 transform hover:scale-105 shadow-raycast"
             >
               <Plus className="w-4 h-4" />

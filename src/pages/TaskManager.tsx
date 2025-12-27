@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useTaskStore } from '../store/taskStore';
 import { Task } from '../types/task';
-import { CheckCircle2, Circle, Calendar, Trash2, Pencil, Plus } from 'lucide-react';
+import { CheckCircle2, Circle, Calendar, Trash2, Pencil } from 'lucide-react';
 
 /**
  * 渲染任务项
@@ -205,13 +205,6 @@ export default function TaskManager() {
               />
               <span>仅看未完成</span>
             </label>
-            <button
-              onClick={() => setIsCreating(true)}
-              className="flex items-center space-x-2 px-4 py-2 bg-raycast-highlight hover:bg-raycast-highlight-hover rounded-raycast-sm transition-all duration-200 transform hover:scale-105 shadow-raycast"
-            >
-              <Plus className="w-4 h-4" />
-              <span className="text-sm font-medium">新建</span>
-            </button>
           </div>
         </div>
 
@@ -261,4 +254,3 @@ export default function TaskManager() {
     </div>
   );
 }
-
